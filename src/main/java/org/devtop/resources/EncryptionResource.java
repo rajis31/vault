@@ -14,7 +14,7 @@ import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("")
-public class GreetingResource {
+public class EncryptionResource {
     @ConfigProperty(name="AES_SECRET")
     private String secret; 
 

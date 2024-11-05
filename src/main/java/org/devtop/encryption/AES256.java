@@ -44,26 +44,16 @@ public class AES256 {
             Cipher cipher = Cipher.getInstance(IMPLEMENTATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmSpec);
             byte[] cipherText = cipher.doFinal(input.getBytes());
-            return Base64.getEncoder()
-                    .encodeToString(cipherText);
-        } catch (NoSuchAlgorithmException ex) {
-            System.out.println("No such algorithm");
+            String base64IV = Base64.getEncoder().encodeToString(iv);
+            String prefixedIv =  base64IV + ":" + Base64.getEncoder().encodeToString(cipherText);
+            return prefixedIv;
+        } catch (Exception e) {
+            System.out.println(e);
             return null;
-        } catch (NoSuchPaddingException ex) {
-            System.out.println("No such padding exception");
-            return null;
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
+
+
+
 
 }
