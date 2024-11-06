@@ -5,6 +5,7 @@
 package org.devtop.encryption;
 
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -37,25 +38,38 @@ public class AES256 {
     public static String encrypt(String input, String secretKey) {
 
         try {
-            byte[] iv = generateIv();
-            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-            byte[] decodedKey = Base64.getDecoder().decode(secretKey);
+            byte[] iv                   = generateIv();
+            GCMParameterSpec gcmSpec    = new GCMParameterSpec(128, iv);
+            byte[] decodedKey           = Base64.getDecoder().decode(secretKey);
             SecretKeySpec secretKeySpec = new SecretKeySpec(decodedKey, "AES");
-            Cipher cipher = Cipher.getInstance(IMPLEMENTATION);
+            Cipher cipher               = Cipher.getInstance(IMPLEMENTATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmSpec);
-            byte[] cipherText = cipher.doFinal(input.getBytes());
-            String base64IV = Base64.getEncoder().encodeToString(iv);
-            String prefixedIv =  base64IV + ":" + Base64.getEncoder().encodeToString(cipherText);
+            byte[] cipherText           = cipher.doFinal(input.getBytes());
+            String base64IV             = Base64.getEncoder().encodeToString(iv);
+            String prefixedIv           =  base64IV + ":" + Base64.getEncoder().encodeToString(cipherText);
             return prefixedIv;
         } catch (Exception e) {
             System.out.println(e);
             return null;
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(Exception ex){
-            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static String decrypt(String input, String secretKey){
+        try {
+            String[] parts              = input.split(":");
+//            System.out.println(parts[0] + " " + parts[1]);
+            byte[] iv                   = Base64.getDecoder().decode(parts[0]);
+            byte[] val                  = Base64.getDecoder().decode(parts[1]);
+            GCMParameterSpec gcmSpec    = new GCMParameterSpec(128, iv);
+            byte[] decodedKey           = Base64.getDecoder().decode(secretKey);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(decodedKey, "AES");
+            Cipher cipher               = Cipher.getInstance(IMPLEMENTATION);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmSpec);
+            byte[] decryptedBytes       = cipher.doFinal(val);
+             return new String(decryptedBytes, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            System.out.println(e);
+            return null;
         }
     }
 

@@ -1,10 +1,13 @@
 package org.devtop.resources;
 
+import io.vertx.core.json.JsonObject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
@@ -12,6 +15,7 @@ import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
 import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.annotations.Param;
 
 @Path("")
 public class EncryptionResource {
@@ -41,9 +45,19 @@ public class EncryptionResource {
     
     @POST
     @Path("/encrypt")
+    @Consumes(MediaType.APPLICATION_JSON)
     public KeyValue encrypt(KeyValue kv) {
         kv.encrypted = AES256.encrypt(kv.value, this.secret);
         return kv;
+    }
+    
+    @POST
+    @Path("/decrypt")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String decrypt(JsonObject ob) {
+        String val = ob.getString("val");
+        String decrypted = AES256.decrypt(val, this.secret);
+        return decrypted;
     }
     
     @GET
