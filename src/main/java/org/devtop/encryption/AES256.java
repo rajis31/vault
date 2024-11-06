@@ -50,6 +50,12 @@ public class AES256 {
         } catch (Exception e) {
             System.out.println(e);
             return null;
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(Exception ex){
+            Logger.getLogger(AES256.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
