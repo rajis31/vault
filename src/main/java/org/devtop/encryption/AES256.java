@@ -57,7 +57,6 @@ public class AES256 {
     public static String decrypt(String input, String secretKey){
         try {
             String[] parts              = input.split(":");
-//            System.out.println(parts[0] + " " + parts[1]);
             byte[] iv                   = Base64.getDecoder().decode(parts[0]);
             byte[] val                  = Base64.getDecoder().decode(parts[1]);
             GCMParameterSpec gcmSpec    = new GCMParameterSpec(128, iv);
