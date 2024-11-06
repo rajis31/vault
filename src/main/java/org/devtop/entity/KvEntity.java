@@ -18,9 +18,13 @@ public class KvEntity extends PanacheEntity {
     public String key;
     public String value;
     
-//    public static List<KvEntity> findDecrypted(){
-//          List<KvEntity> kvlist = listAll();
-//          kvlist.forEach(kv -> AES256.  );
-//
-//    }
+    
+    public static List<KvEntity> findDecrypted(String secretKey){
+          List<KvEntity> kvlist = listAll();
+          
+          for(KvEntity kv: kvlist){
+              kv.value = AES256.decrypt(kv.value, secretKey);
+          }
+          return kvlist;
+    }
 }
