@@ -1,6 +1,7 @@
 package org.devtop.resources;
 
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -16,9 +17,14 @@ import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
 import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
-@Path("")
-public class EncryptionResource {
+
+@Path("/kv")
+public class KvResource {
+
+    @Inject
+    JsonWebToken jwt;
 
     @ConfigProperty(name = "AES_SECRET")
     private String secret;
@@ -48,13 +54,13 @@ public class EncryptionResource {
     }
 
     @GET
-    @Path("/kv")
+    @Path("/all")
     public List<KvEntity> getKv() {
         return KvEntity.findDecrypted(secret);
     }
 
     @POST
-    @Path("/kv/insert")
+    @Path("/insert")
     @Transactional
     public Response createKv(KeyValue kv) {
         try {
@@ -72,7 +78,8 @@ public class EncryptionResource {
     }
 
     @DELETE
-    @Path("/kv/{id}")
+    @Path("/{id}")
+
     @Transactional
     public Response deleteKv(@PathParam("id") int id) {
         try {
