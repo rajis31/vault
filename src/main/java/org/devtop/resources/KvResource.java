@@ -17,14 +17,10 @@ import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
 import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 
 @Path("/kv")
 public class KvResource {
-
-    @Inject
-    JsonWebToken jwt;
 
     @ConfigProperty(name = "AES_SECRET")
     private String secret;
