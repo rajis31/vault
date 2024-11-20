@@ -15,7 +15,7 @@ public class Main {
         @Override
         public int run(String... args) throws Exception{
             System.out.println("Started up");
-            Quarkus.waitForExit();;
+            Quarkus.waitForExit();
             return 0;
         }
     }
