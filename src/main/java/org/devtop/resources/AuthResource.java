@@ -88,7 +88,6 @@ public class AuthResource {
 
         try {
             System.out.println("Username is " + params.username);
-            params.password = AES256.encrypt(params.password, aesSecret);
             User userExists = User.find("username", params.username).firstResult();
 
             if (userExists != null) {
@@ -100,15 +99,15 @@ public class AuthResource {
 
             User user = new User();
             user.setNickname(params.nickname);
-            user.setPassword(params.password);
+            user.setPassword(AES256.encrypt(params.password, aesSecret));
             user.setUsername(params.username);
             user.setService(params.service);
             user.persist();
 
-            return Response.status(Response.Status.NOT_ACCEPTABLE)
+            return Response.status(Response.Status.CREATED)
                     .entity(
                             Map.of("success", false,
-                                    "message", "User already exists",
+                                    "message", "User has been created",
                                     "user", Map.of(
                                             "id", user.getId(),
                                             "username", user.getUsername(),
