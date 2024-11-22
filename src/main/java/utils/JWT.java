@@ -1,13 +1,12 @@
 package utils;
 
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Map;
 
 public class JWT {
 
@@ -32,12 +31,21 @@ public class JWT {
 
             return claimsJws.getBody();
         } catch (Exception e) {
-            e.printStackTrace();
             return  null;
         }
     }
 
-    public String generateJwt(){
+    public String generateJwt(Map<String, Object> claims){
+        long delta            = 1000 * 60* 60;
+        Date now              = new Date();
+        Date expiration       = new Date(now.getTime() + delta);
+        SecretKey secretkey   = Keys.hmacShaKeyFor(this.secretKey.getBytes(StandardCharsets.UTF_8));
 
+        JwtBuilder builder = Jwts.builder()
+                .claims(claims)
+                .expiration(expiration)
+                .issuedAt(now)
+                .signWith(SignatureAlgorithm.HS256, secretkey);
+        return builder.compact();
     }
 }
