@@ -1,7 +1,6 @@
 package org.devtop.resources;
 
 import io.vertx.core.json.JsonObject;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;

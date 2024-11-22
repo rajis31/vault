@@ -81,6 +81,12 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- Validator -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

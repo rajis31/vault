@@ -7,23 +7,18 @@ import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
 import org.devtop.annotations.CheckAuthorization;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import utils.JWT;
-
-import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 @Provider
 public class AuthFilter implements ContainerRequestFilter {
 
     private boolean checkAuthorization = false;
     private String[] roles;
-
-    @Context
-    UriInfo uriInfo;
 
     @Context
     ResourceInfo resourceInfo;
@@ -41,14 +36,12 @@ public class AuthFilter implements ContainerRequestFilter {
         for (Annotation annotation : annotations) {
             if (annotation.annotationType().equals(CheckAuthorization.class)) {
                 checkAuthorization = true;
-                System.out.println("Has CheckAuthorization annotation");
                 roles = ((CheckAuthorization) annotation).roles();
             }
         }
 
         if (checkAuthorization) {
             String token = this.parseAuthHeader(headers, "Authorization");
-            System.out.println(jwtSecret);
 
             if (token == null) {
                 containerRequestContext.abortWith(
@@ -56,6 +49,7 @@ public class AuthFilter implements ContainerRequestFilter {
                                 .entity("Invalid authorization header")
                                 .build()
                 );
+                return;
             }
 
             // Parse token
@@ -68,18 +62,21 @@ public class AuthFilter implements ContainerRequestFilter {
                                 .entity("Invalid authorization header")
                                 .build()
                 );
+                return;
             } else {
-                  String role = claims.get("role", String.class);
-                  boolean checkRole = false;
-                  checkRole = this.checkRole(roles, role);
-                  System.out.println(checkRole);
-                
+                String role = claims.get("role", String.class);
+                boolean checkRole = false;
+                checkRole = this.checkRole(roles, role);
+
+                if (!checkRole) {
+                    containerRequestContext.abortWith(
+                            Response.status(Response.Status.UNAUTHORIZED)
+                                    .entity("Do not have appropriate permissions")
+                                    .build());
+                    return;
+                }
+
             }
-            
-          
-            
-            
-            
 
         }
     }
@@ -93,14 +90,14 @@ public class AuthFilter implements ContainerRequestFilter {
             return splitHeader[1].trim();
         }
     }
-    
-    private boolean checkRole(String[] roles, String role){
-        for(String r: roles){
-            if(r.equals(role)){
+
+    private boolean checkRole(String[] roles, String role) {
+        for (String r : roles) {
+            if (r.equals(role)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }
