@@ -82,7 +82,17 @@ public class AuthFilter implements ContainerRequestFilter {
     }
 
     public String parseAuthHeader(HttpHeaders headers, String property) {
+        if(headers == null){
+            return null;
+        }
+        
         String header = headers.getHeaderString(property);
+        
+        if(header == null){
+            return null;
+        }
+        
+        
         String[] splitHeader = header.split(" ");
         if (splitHeader == null || splitHeader.length < 2) {
             return null;

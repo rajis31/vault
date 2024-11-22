@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.devtop.annotations.CheckAuthorization;
 import org.devtop.encryption.AES256;
 import org.devtop.entity.User;
+import org.devtop.json.LoginValue;
 import org.devtop.json.RegisterValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import utils.JWT;
@@ -106,7 +107,7 @@ public class AuthResource {
 
             return Response.status(Response.Status.CREATED)
                     .entity(
-                            Map.of("success", false,
+                            Map.of("success", true,
                                     "message", "User has been created",
                                     "user", Map.of(
                                             "id", user.getId(),
@@ -116,7 +117,38 @@ public class AuthResource {
                             ))
                     .build();
         } catch (Exception e) {
-            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal error, please try again")
+                    .build();
+        }
+
+    }
+    
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @CheckAuthorization(roles = {"admin","service","user"})
+    @Transactional
+    @Path("/login")
+    public Response login(LoginValue params) {
+
+        Set<ConstraintViolation<LoginValue>> violations = validator.validate(params);
+        
+        if(!violations.isEmpty()){
+            return Response.status(Response.Status.BAD_REQUEST)
+                 .entity(new Result(violations))
+                 .build();
+        }
+
+        try {
+         
+
+            return Response.status(Response.Status.CREATED)
+                    .entity(
+                            Map.of("success", true)
+                           )
+                    .build();
+        } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Internal error, please try again")
                     .build();
