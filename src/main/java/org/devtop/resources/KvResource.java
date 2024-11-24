@@ -74,7 +74,6 @@ public class KvResource {
 
     @DELETE
     @Path("/{id}")
-
     @Transactional
     public Response deleteKv(@PathParam("id") int id) {
         try {

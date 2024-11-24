@@ -5,11 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,7 +123,6 @@ public class AuthResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @CheckAuthorization(roles = {"admin","service","user"})
     @Transactional
     @Path("/login")
     public Response login(LoginValue params) {
@@ -141,20 +136,46 @@ public class AuthResource {
         }
 
         try {
-         
+
+            User userFound = User.find("username", params.username).firstResult();
+
+            if(userFound == null){
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("Username or password is wrong")
+                        .build();
+            }
+
+            if(!AES256.decrypt(userFound.getPassword(), aesSecret).equals(params.getPassword())){
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("Username or password is wrong")
+                        .build();
+            }
+
+            JWT jwt = new JWT(jwtSecret);
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("role", userFound.getService());
+            claims.put("id", userFound.getId());
+            String token = jwt.generateJwt(claims);
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+
+            // Save token in backend
+            userFound.setToken(token);
+            userFound.persist();
 
             return Response.status(Response.Status.CREATED)
-                    .entity(
-                            Map.of("success", true)
-                           )
+                    .entity(data)
                     .build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Internal error, please try again")
                     .build();
         }
-
     }
+
+
+    @DELETE
+
 
     public static class Result {
 
