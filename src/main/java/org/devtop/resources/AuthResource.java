@@ -172,11 +172,7 @@ public class AuthResource {
                     .build();
         }
     }
-
-
-    @DELETE
-
-
+    
     public static class Result {
 
         Result(String message) {
