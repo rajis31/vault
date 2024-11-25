@@ -8,11 +8,10 @@ import jakarta.validation.constraints.NotBlank;
 
 
 /**
- *
  * @author raji
  */
 public class LoginValue {
-    
+
     @NotBlank(message = "Username should not be blank")
     public String username;
 
@@ -39,7 +38,6 @@ public class LoginValue {
     public String toString() {
         return "LoginValue{" + "username=" + username + ", password=" + password + '}';
     }
-    
-    
-    
+
+
 }

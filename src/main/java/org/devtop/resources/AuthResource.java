@@ -16,14 +16,11 @@ import org.devtop.encryption.AES256;
 import org.devtop.entity.User;
 import org.devtop.json.LoginValue;
 import org.devtop.json.RegisterValue;
+import org.devtop.json.DeleteUserValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import utils.JWT;
 
-class TokenParams {
 
-    String role;
-    int id;
-}
 
 @Path("/auth")
 public class AuthResource {
@@ -172,6 +169,62 @@ public class AuthResource {
                     .build();
         }
     }
+
+
+
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    @Path("/user/delete")
+    public Response deleteUser(LoginValue params) {
+
+        Set<ConstraintViolation<LoginValue>> violations = validator.validate(params);
+
+        if(!violations.isEmpty()){
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new Result(violations))
+                    .build();
+        }
+
+        try {
+
+            User userFound = User.find("username", params.username).firstResult();
+
+            if(userFound == null){
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("Username or password is wrong")
+                        .build();
+            }
+
+            if(!AES256.decrypt(userFound.getPassword(), aesSecret).equals(params.getPassword())){
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("Username or password is wrong")
+                        .build();
+            }
+
+            JWT jwt = new JWT(jwtSecret);
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("role", userFound.getService());
+            claims.put("id", userFound.getId());
+            String token = jwt.generateJwt(claims);
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+
+            // Save token in backend
+            userFound.setToken(token);
+            userFound.persist();
+
+            return Response.status(Response.Status.CREATED)
+                    .entity(data)
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal error, please try again")
+                    .build();
+        }
+    }
+
     
     public static class Result {
 
