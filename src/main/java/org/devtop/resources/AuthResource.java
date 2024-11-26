@@ -17,6 +17,7 @@ import org.devtop.entity.User;
 import org.devtop.json.LoginValue;
 import org.devtop.json.RegisterValue;
 import org.devtop.json.DeleteUserValue;
+import org.devtop.json.TokenValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import utils.JWT;
 
@@ -52,7 +53,7 @@ public class AuthResource {
     @Produces(MediaType.APPLICATION_JSON)
     @CheckAuthorization(roles = {"admin", "client"})
     @Path("/token")
-    public Response generateToken(TokenParams params) {
+    public Response generateToken(TokenValue params) {
         JWT jwt = new JWT(jwtSecret);
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", params.role);
@@ -175,11 +176,12 @@ public class AuthResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @CheckAuthorization(roles = {"admin"})
     @Transactional
     @Path("/user/delete")
-    public Response deleteUser(LoginValue params) {
+    public Response deleteUser(DeleteUserValue params) {
 
-        Set<ConstraintViolation<LoginValue>> violations = validator.validate(params);
+        Set<ConstraintViolation<DeleteUserValue>> violations = validator.validate(params);
 
         if(!violations.isEmpty()){
             return Response.status(Response.Status.BAD_REQUEST)
@@ -189,34 +191,18 @@ public class AuthResource {
 
         try {
 
-            User userFound = User.find("username", params.username).firstResult();
+            User userFound = User.findById(params.getId());
 
             if(userFound == null){
                 return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("Username or password is wrong")
+                        .entity("User is not found")
                         .build();
             }
 
-            if(!AES256.decrypt(userFound.getPassword(), aesSecret).equals(params.getPassword())){
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("Username or password is wrong")
-                        .build();
-            }
+            userFound.delete();
 
-            JWT jwt = new JWT(jwtSecret);
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("role", userFound.getService());
-            claims.put("id", userFound.getId());
-            String token = jwt.generateJwt(claims);
-            Map<String, Object> data = new HashMap<>();
-            data.put("token", token);
-
-            // Save token in backend
-            userFound.setToken(token);
-            userFound.persist();
-
-            return Response.status(Response.Status.CREATED)
-                    .entity(data)
+            return Response.status(Response.Status.ACCEPTED)
+                    .entity("Successfully deleted user")
                     .build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

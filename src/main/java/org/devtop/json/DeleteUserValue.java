@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public class DeleteUserValue {
     @NotNull(message = "User id is required")
-    public int id;
+    private int id;
 
     public int getId() {
         return id;

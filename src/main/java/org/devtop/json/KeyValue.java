@@ -4,19 +4,29 @@
  */
 package org.devtop.json;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 /**
  *
  * @author raji
  */
 public class KeyValue {
+
+    @NotBlank(message = "Key should not be blank")
     public String key;
+
+    @NotBlank(message = "Value should not be blank")
     public String value;
     public String encrypted;
+
+    @NotBlank(message = "User id can't be blank")
+    public int user_id;
     
-    public KeyValue(){}
-    public KeyValue(String key, String value){
+    public KeyValue(String key, String value, int user_id){
         this.key   = key;
         this.value = value;
+        this.user_id = user_id;
     }
     
 }

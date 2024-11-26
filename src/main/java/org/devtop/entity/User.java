@@ -5,14 +5,20 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.devtop.enums.ServiceEnum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
     private String username;
     private String password;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<KvEntity> keyValues = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private ServiceEnum service;

@@ -5,10 +5,10 @@ import jakarta.validation.constraints.NotNull;
 
 public class TokenValue {
     @NotBlank(message = "Id cannot be null")
-    private String role;
+    public String role;
 
     @NotNull(message = "Id cannot be null")
-    private int id;
+    public int id;
 
     public String getRole() {
         return role;
