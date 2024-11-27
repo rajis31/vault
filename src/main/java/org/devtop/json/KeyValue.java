@@ -20,7 +20,7 @@ public class KeyValue {
     public String value;
     public String encrypted;
 
-    @NotBlank(message = "User id can't be blank")
+    @NotNull(message = "User id can't be blank")
     public int user_id;
     
     public KeyValue(String key, String value, int user_id){

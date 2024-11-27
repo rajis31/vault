@@ -1,7 +1,10 @@
 package org.devtop.resources;
 
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -12,14 +15,21 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
+import org.devtop.json.DeleteUserValue;
 import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 
 @Path("/kv")
 public class KvResource {
+
+    @Inject
+    Validator validator;
 
     @ConfigProperty(name = "AES_SECRET")
     private String secret;
@@ -58,6 +68,14 @@ public class KvResource {
     @Path("/insert")
     @Transactional
     public Response createKv(KeyValue kv) {
+
+        Set<ConstraintViolation<KeyValue>> violations = validator.validate(kv);
+
+        if(!violations.isEmpty()){
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new KvResource.Result(violations))
+                    .build();
+        }
         try {
             KvEntity kve = new KvEntity();
             kve.key = kv.key;
@@ -95,6 +113,35 @@ public class KvResource {
                     .entity("Failed to process request: " + e.getMessage())
                     .build();
         }
+    }
+
+
+
+
+    public static class Result {
+
+        Result(String message) {
+            this.success = true;
+            this.message = message;
+        }
+
+        Result(Set<? extends ConstraintViolation<?>> violations) {
+            this.success = false;
+            this.message = violations.stream()
+                    .map(cv -> cv.getMessage())
+                    .collect(Collectors.joining(", "));
+        }
+
+        private String message;
+        private boolean success;
+
+        public String getMessage() {
+            return message;
+        }
+        public boolean isSuccess() {
+            return success;
+        }
+
     }
 
 }
