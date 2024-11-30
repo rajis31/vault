@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.devtop.annotations.CheckAuthorization;
 import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
+import org.devtop.entity.User;
 import org.devtop.json.DeleteUserValue;
 import org.devtop.json.KeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -34,31 +36,9 @@ public class KvResource {
     @ConfigProperty(name = "AES_SECRET")
     private String secret;
 
-    @GET
-    @Path("/secret")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getSecret() {
-        return secret;
-    }
-
-    @POST
-    @Path("/encrypt")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public KeyValue encrypt(KeyValue kv) {
-        kv.encrypted = AES256.encrypt(kv.value, this.secret);
-        return kv;
-    }
-
-    @POST
-    @Path("/decrypt")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String decrypt(JsonObject ob) {
-        String val = ob.getString("val");
-        String decrypted = AES256.decrypt(val, this.secret);
-        return decrypted;
-    }
 
     @GET
+    @CheckAuthorization(roles = {"admin"})
     @Path("/all")
     public List<KvEntity> getKv() {
         return KvEntity.findDecrypted(secret);
@@ -66,6 +46,7 @@ public class KvResource {
 
     @POST
     @Path("/insert")
+    @CheckAuthorization(roles = {"admin"})
     @Transactional
     public Response createKv(KeyValue kv) {
 
@@ -78,6 +59,11 @@ public class KvResource {
         }
         try {
             KvEntity kve = new KvEntity();
+            User user = User.findById(kv.user_id);
+            if (user == null){
+                throw new RuntimeException("User does not exist");
+            }
+            kve.setUser(user);
             kve.key = kv.key;
             kve.value = AES256.encrypt(kv.value, secret);
             kve.persist();
@@ -92,6 +78,7 @@ public class KvResource {
 
     @DELETE
     @Path("/{id}")
+    @CheckAuthorization(roles = {"admin"})
     @Transactional
     public Response deleteKv(@PathParam("id") int id) {
         try {
@@ -142,6 +129,23 @@ public class KvResource {
             return success;
         }
 
+    }
+
+    @POST
+    @Path("/encrypt")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public KeyValue encrypt(KeyValue kv) {
+        kv.encrypted = AES256.encrypt(kv.value, this.secret);
+        return kv;
+    }
+
+    @POST
+    @Path("/decrypt")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String decrypt(JsonObject ob) {
+        String val = ob.getString("val");
+        String decrypted = AES256.decrypt(val, this.secret);
+        return decrypted;
     }
 
 }

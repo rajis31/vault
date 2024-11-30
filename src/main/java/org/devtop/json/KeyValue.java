@@ -21,9 +21,9 @@ public class KeyValue {
     public String encrypted;
 
     @NotNull(message = "User id can't be blank")
-    public int user_id;
+    public Integer user_id;
     
-    public KeyValue(String key, String value, int user_id){
+    public KeyValue(String key, String value, Integer user_id){
         this.key   = key;
         this.value = value;
         this.user_id = user_id;
