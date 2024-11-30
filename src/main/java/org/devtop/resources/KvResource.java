@@ -5,13 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
@@ -24,6 +18,7 @@ import org.devtop.entity.KvEntity;
 import org.devtop.entity.User;
 import org.devtop.json.DeleteUserValue;
 import org.devtop.json.KeyValue;
+import org.devtop.json.UpdateKeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 
@@ -95,6 +90,41 @@ public class KvResource {
                     .entity("Record not found")
                     .build();
 
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("Failed to process request: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("/update")
+    @CheckAuthorization(roles = {"admin"})
+    @Transactional
+    public Response updateKv(UpdateKeyValue kv) {
+        Set<ConstraintViolation<UpdateKeyValue>> violations = validator.validate(kv);
+
+        if(!violations.isEmpty()){
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new KvResource.Result(violations))
+                    .build();
+        }
+
+        try {
+            KvEntity kvFound = KvEntity.findById(kv.id);
+            User user     = User.findById(kv.user_id);
+
+            if(kvFound == null || user == null){
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Record not found")
+                        .build();
+            }
+
+            kvFound.key   = kv.key;
+            kvFound.value = AES256.encrypt(kv.value,secret);
+            kvFound.setUser(user);
+            kvFound.persist();
+            return Response.ok(kv).build();
         } catch (Exception e) {
             return Response.serverError()
                     .entity("Failed to process request: " + e.getMessage())
