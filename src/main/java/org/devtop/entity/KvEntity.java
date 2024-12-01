@@ -11,6 +11,8 @@ package org.devtop.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.devtop.encryption.AES256;
@@ -36,11 +38,22 @@ public class KvEntity extends PanacheEntityBase {
         this.user = user;
     }
 
+    public static List<KvEntity> findDecryptedById(int id, String secretKey){
+        KvEntity kv = findById(id);
+        List<KvEntity> kvList = new ArrayList<>();
+        kvList.add(kv);
+
+        for(KvEntity kvl: kvList){
+            kvl.value = AES256.decrypt(kvl.value, secretKey);
+        }
+        return kvList;
+    }
+
     public static List<KvEntity> findDecrypted(String secretKey){
           List<KvEntity> kvlist = listAll();
           
-          for(KvEntity kv: kvlist){
-              kv.value = AES256.decrypt(kv.value, secretKey);
+          for(KvEntity kvItem: kvlist){
+              kvItem.value = AES256.decrypt(kvItem.value, secretKey);
           }
           return kvlist;
     }

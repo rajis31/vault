@@ -39,6 +39,15 @@ public class KvResource {
         return KvEntity.findDecrypted(secret);
     }
 
+
+    @GET
+    @CheckAuthorization(roles = {"admin"})
+    @Path("/{id}")
+    public List<KvEntity> getKvById(@PathParam("id") int id) {
+        return KvEntity.findDecryptedById(id, secret);
+    }
+
+
     @POST
     @Path("/insert")
     @CheckAuthorization(roles = {"admin"})
