@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
 import org.devtop.annotations.CheckAuthorization;
 import org.devtop.encryption.AES256;
 import org.devtop.entity.KvEntity;
-import org.devtop.entity.User;
-import org.devtop.json.DeleteUserValue;
+import org.devtop.entity.UserEntity;
 import org.devtop.json.KeyValue;
 import org.devtop.json.UpdateKeyValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -63,7 +62,7 @@ public class KvResource {
         }
         try {
             KvEntity kve = new KvEntity();
-            User user = User.findById(kv.user_id);
+            UserEntity user = UserEntity.findById(kv.user_id);
             if (user == null){
                 throw new RuntimeException("User does not exist");
             }
@@ -121,7 +120,7 @@ public class KvResource {
 
         try {
             KvEntity kvFound = KvEntity.findById(kv.id);
-            User user     = User.findById(kv.user_id);
+            UserEntity user     = UserEntity.findById(kv.user_id);
 
             if(kvFound == null || user == null){
                 return Response.status(Response.Status.NOT_FOUND)
@@ -141,6 +140,23 @@ public class KvResource {
         }
     }
 
+    @POST
+    @Path("/encrypt")
+    @CheckAuthorization(roles = {"admin"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public KeyValue encrypt(KeyValue kv) {
+        kv.encrypted = AES256.encrypt(kv.value, this.secret);
+        return kv;
+    }
+
+    @POST
+    @Path("/decrypt")
+    @CheckAuthorization(roles = {"admin"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String decrypt(JsonObject ob) {
+        String val = ob.getString("val");
+        return AES256.decrypt(val, this.secret);
+    }
 
 
 
@@ -170,21 +186,6 @@ public class KvResource {
 
     }
 
-    @POST
-    @Path("/encrypt")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public KeyValue encrypt(KeyValue kv) {
-        kv.encrypted = AES256.encrypt(kv.value, this.secret);
-        return kv;
-    }
 
-    @POST
-    @Path("/decrypt")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String decrypt(JsonObject ob) {
-        String val = ob.getString("val");
-        String decrypted = AES256.decrypt(val, this.secret);
-        return decrypted;
-    }
 
 }

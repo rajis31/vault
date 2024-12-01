@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.devtop.annotations.CheckAuthorization;
 import org.devtop.encryption.AES256;
-import org.devtop.entity.User;
+import org.devtop.entity.UserEntity;
 import org.devtop.json.LoginValue;
 import org.devtop.json.RegisterValue;
 import org.devtop.json.DeleteUserValue;
@@ -83,7 +83,7 @@ public class AuthResource {
 
         try {
             System.out.println("Username is " + params.username);
-            User userExists = User.find("username", params.username).firstResult();
+            UserEntity userExists = UserEntity.find("username", params.username).firstResult();
 
             if (userExists != null) {
                 return Response.status(Response.Status.NOT_ACCEPTABLE)
@@ -92,7 +92,7 @@ public class AuthResource {
 
             }
 
-            User user = new User();
+            UserEntity user = new UserEntity();
             user.setNickname(params.nickname);
             user.setPassword(AES256.encrypt(params.password, aesSecret));
             user.setUsername(params.username);
@@ -135,11 +135,17 @@ public class AuthResource {
 
         try {
 
-            User userFound = User.find("username", params.username).firstResult();
+            UserEntity userFound = UserEntity.find("username", params.username).firstResult();
 
             if(userFound == null){
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity("Username or password is wrong")
+                        .build();
+            }
+
+            if( userFound.getDisabled() == null ||(userFound.getDisabled() != null && userFound.getDisabled())){
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("User has been disabled")
                         .build();
             }
 
@@ -191,7 +197,7 @@ public class AuthResource {
 
         try {
 
-            User userFound = User.findById(params.getId());
+            UserEntity userFound = UserEntity.findById(params.getId());
 
             if(userFound == null){
                 return Response.status(Response.Status.UNAUTHORIZED)

@@ -10,7 +10,6 @@ package org.devtop.entity;
  */
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +27,13 @@ public class KvEntity extends PanacheEntityBase {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity user;
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User extends PanacheEntityBase {
+public class UserEntity extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
@@ -32,6 +32,9 @@ public class User extends PanacheEntityBase {
 
     @Nullable
     private String token;
+
+    @Nullable
+    private Boolean disabled = false;
 
     @Nullable
     public String getToken() {
@@ -82,4 +85,8 @@ public class User extends PanacheEntityBase {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public void setDisabled(boolean disabled){ this.disabled = disabled; }
+
+    public Boolean getDisabled(){ return this.disabled; }
 }
