@@ -76,10 +76,32 @@
             <version>0.12.6</version>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-config-yaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
             <version>0.12.6</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jsonb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jaxb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+            <version>3.2.3</version>
         </dependency>
         
         <!-- Validator -->
@@ -157,6 +179,25 @@
             <properties>
                 <skipITs>false</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.native.resources.includes>.env</quarkus.native.resources.includes>
+                <quarkus.native.additional-build-args>
+                    --initialize-at-run-time=io.quarkus.runner.ApplicationImpl,
+                    --initialize-at-run-time=io.github.cdimascio.dotenv.Dotenv,
+                    --initialize-at-run-time=org.hibernate.type.format.jakartajson,
+                    --initialize-at-run-time=org.hibernate.type.format.jakartajson.JsonBJsonFormatMapper,
+                    --initialize-at-run-time=org.hibernate.boot.archive.scan.spi,
+                    --initialize-at-run-time=org.hibernate.boot.archive.scan.spi.ClassFileArchiveEntryHandler,
+                    --initialize-at-run-time=org.hibernate.type.format.jackson,
+                    --initialize-at-run-time=org.jboss.jandex,
+                    --initialize-at-run-time=org.jboss.jandex.DotName,
+                    --initialize-at-run-time=org.jboss.jandex.Indexer,
+                    --initialize-at-run-time=jakarta.json.bind.Jsonb,
+                    --initialize-at-run-time=io.quarkus.hibernate.orm.runtime.customized.FormatMapperKind,
+                    --initialize-at-run-time=org.jboss.jandex.DotName,
+                    --initialize-at-run-time=org.jboss.jandex.Indexer,
+                    --initialize-at-run-time=org.jboss.jandex.JandexReflection,
+                    --initialize-at-run-time=org.hibernate.boot.archive.scan.spi.ClassFileArchiveEntryHandler,
+                </quarkus.native.additional-build-args>
             </properties>
         </profile>
     </profiles>
